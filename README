@@ -1,0 +1,7 @@
+USAGE
+================
+```
+
+vagrant@k8s-3:~$ PYTHONUNBUFFERED=1 ansible-playbook /vagrant/ansible/playbook.yml  -i  /vagrant/ansible/hosts/all
+```
+Ubuntu 16.04 LTS need to restart docker services manually

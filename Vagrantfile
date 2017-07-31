@@ -11,7 +11,8 @@ Vagrant.configure(2) do |config|
       d.vm.box = "bento/centos-7.3" 
       d.vm.hostname = "nginx-#{i}"
       x = 0
-      d.vm.network "private_network", ip: "192.168.77.10#{i+x}"    
+      d.vm.network "public_network", bridge: "eno4", ip: "192.168.57.10#{i+x}", netmask: "255.255.255.0" , gateway: "192.168.57.1"
+      # d.vm.network "private_network", ip: "192.168.77.10#{i+x}"    
       d.vm.provider "virtualbox" do |v|
         v.memory = 2048
       end
@@ -26,7 +27,8 @@ Vagrant.configure(2) do |config|
       d.vm.box = "bento/ubuntu-16.04"
       d.vm.hostname = "ap-#{i}"
       x = 2
-      d.vm.network "private_network", ip: "192.168.77.10#{i+x}"    
+      d.vm.network "public_network", bridge: "eno4", ip: "192.168.57.10#{i+x}", netmask: "255.255.255.0" , gateway: "192.168.57.1"
+      # d.vm.network "private_network", ip: "192.168.77.10#{i+x}"    
       d.vm.provider "virtualbox" do |v|
         v.memory = 2048
       end     
@@ -37,7 +39,8 @@ Vagrant.configure(2) do |config|
       d.vm.box = "bento/centos-7.3" 
       d.vm.hostname = "ap-#{i}"
       x = 2
-      d.vm.network "private_network", ip: "192.168.77.10#{i+x}"    
+      d.vm.network "public_network", bridge: "eno4", ip: "192.168.57.10#{i+x}", netmask: "255.255.255.0" , gateway: "192.168.57.1"
+      # d.vm.network "private_network", ip: "192.168.77.10#{i+x}"    
       d.vm.provider "virtualbox" do |v|
         v.memory = 2048
       end     

@@ -12,6 +12,7 @@ Vagrant.configure(2) do |config|
       d.vm.hostname = "nginx-#{i}"
       x = 0
       d.vm.network "public_network", bridge: "eno4", ip: "192.168.57.10#{i+x}", netmask: "255.255.255.0" , gateway: "192.168.57.1"
+      d.vm.provision :shell, inline: " sudo route delete default; sudo route add default gw 192.168.57.1 dev enp0s8 "       
       # d.vm.network "private_network", ip: "192.168.77.10#{i+x}"    
       d.vm.provider "virtualbox" do |v|
         v.memory = 2048
@@ -22,30 +23,23 @@ Vagrant.configure(2) do |config|
       end 
     end
   end
-  (1..2).each do |i|
+  (1..7).each do |i|
     config.vm.define "ap-#{i}" do |d|
-      d.vm.box = "bento/ubuntu-16.04"
+      if (i == 1 || i == 2 )
+          d.vm.box = "bento/ubuntu-16.04"
+      else
+          d.vm.box = "bento/centos-7.3" 
+      end
       d.vm.hostname = "ap-#{i}"
       x = 2
-      d.vm.network "public_network", bridge: "eno4", ip: "192.168.57.10#{i+x}", netmask: "255.255.255.0" , gateway: "192.168.57.1"
+      d.vm.network "public_network", bridge: "eno4", ip: "192.168.57.10#{i+x}", netmask: "255.255.255.0" , gateway: "192.168.57.1"      
       # d.vm.network "private_network", ip: "192.168.77.10#{i+x}"    
       d.vm.provider "virtualbox" do |v|
         v.memory = 2048
-      end     
+      end
+      d.vm.provision :shell, inline: " sudo route delete default; sudo route add default gw 192.168.57.1 dev enp0s8 " 
     end
-  end
-  (3..7).each do |i|
-    config.vm.define "ap-#{i}" do |d|
-      d.vm.box = "bento/centos-7.3" 
-      d.vm.hostname = "ap-#{i}"
-      x = 2
-      d.vm.network "public_network", bridge: "eno4", ip: "192.168.57.10#{i+x}", netmask: "255.255.255.0" , gateway: "192.168.57.1"
-      # d.vm.network "private_network", ip: "192.168.77.10#{i+x}"    
-      d.vm.provider "virtualbox" do |v|
-        v.memory = 2048
-      end     
-    end
-  end  
+  end 
   if Vagrant.has_plugin?("vagrant-cachier")
     config.cache.scope = :box
   end

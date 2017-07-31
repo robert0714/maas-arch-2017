@@ -1,13 +1,24 @@
+# hosts: [
+#   { host_ip: "192.168.77.101", host_name: "nginx-1"},
+#   { host_ip: "192.168.77.102", host_name: "nginx-2"},
+#   { host_ip: "192.168.77.103", host_name: "ap-1"},
+#   { host_ip: "192.168.77.104", host_name: "ap-2"},
+#   { host_ip: "192.168.77.105", host_name: "ap-3"},
+#   { host_ip: "192.168.77.106", host_name: "ap-4"},
+#   { host_ip: "192.168.77.107", host_name: "ap-5"},
+#   { host_ip: "192.168.77.108", host_name: "ap-6"},
+#   { host_ip: "192.168.77.109", host_name: "ap-7"}
+# ]
 hosts: [
-  { host_ip: "192.168.77.101", host_name: "nginx-1"},
-  { host_ip: "192.168.77.102", host_name: "nginx-2"},
-  { host_ip: "192.168.77.103", host_name: "ap-1"},
-  { host_ip: "192.168.77.104", host_name: "ap-2"},
-  { host_ip: "192.168.77.105", host_name: "ap-3"},
-  { host_ip: "192.168.77.106", host_name: "ap-4"},
-  { host_ip: "192.168.77.107", host_name: "ap-5"},
-  { host_ip: "192.168.77.108", host_name: "ap-6"},
-  { host_ip: "192.168.77.109", host_name: "ap-7"}
+  { host_ip: "192.168.57.101", host_name: "nginx-1"},
+  { host_ip: "192.168.57.102", host_name: "nginx-2"},
+  { host_ip: "192.168.57.103", host_name: "ap-1"},
+  { host_ip: "192.168.57.104", host_name: "ap-2"},
+  { host_ip: "192.168.57.105", host_name: "ap-3"},
+  { host_ip: "192.168.57.106", host_name: "ap-4"},
+  { host_ip: "192.168.57.107", host_name: "ap-5"},
+  { host_ip: "192.168.57.108", host_name: "ap-6"},
+  { host_ip: "192.168.57.109", host_name: "ap-7"}
 ]
 
 obsolete_services:

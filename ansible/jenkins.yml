@@ -5,4 +5,4 @@
   #strategy: free
   serial: 1
   roles:
-    - jenkins
+    - jenkins2-docker

@@ -1,0 +1,156 @@
+
+- name: Directories are created
+  file:
+    path: "{{ item.dir }}"
+    mode: 0777
+    recurse: yes
+    state: directory
+  with_items: "{{ configs }}"
+  tags: [jenkins]
+
+
+- name: Create custom init scripts directory.
+  file:
+    path: "/data/jenkins/init.groovy.d"
+    state: directory
+    mode: 0775
+  tags:  [jenkins]
+
+- name: configure default users
+  template:
+    src: basic-security.groovy
+    dest: "/data/jenkins/init.groovy.d/basic-security.groovy"
+  register: jenkins_users_config
+  tags:  [jenkins]
+   
+- name: Container is running
+  docker_container:   
+    privileged: yes
+    env:
+      JAVA_OPTS: "-Djenkins.install.runSetupWizard=false    -Duser.timezone=Asia/Taipei"
+#      JENKINS_OPTS: "--prefix=/jenkins" 
+    name: jenkins
+    image: "jenkins:{{ jenkins_version }}"
+    ports: 
+        - "8080:8080"
+        - "5000:5000"
+        - "50000:50000"
+    volumes:
+      - /data/jenkins:/var/jenkins_home
+      - /vagrant/.vagrant/machines:/machines
+  register: container_result
+  tags: [jenkins]
+
+- pause: seconds=45
+  when: container_result|changed
+  tags: [jenkins]
+
+- name: wildfly-cli-8.2.1.Final-client is present for wildfly-deploy plugins
+  get_url:
+    url: https://search.maven.org/remotecontent?filepath=org/wildfly/wildfly-cli/8.2.1.Final/wildfly-cli-8.2.1.Final-client.jar
+    dest: /data/jenkins/war/WEB-INF/lib/wildfly-cli-8.2.1.Final-client.jar
+  tags: [jenkins]
+
+# - name: Plugins are present
+#   copy:
+#     src='plugins/{{ item }}'
+#     dest='/data/jenkins/plugins/{{ item }}'
+#     mode=0777
+#   with_items: "{{ plugins_files }}"
+#   tags: [jenkins]
+
+- name: Configurations are present
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dir }}/{{ item.file }}"
+    mode: "{{ item.mode }}"
+  with_items: "{{ configs }}"
+  register: configs_result
+  tags: [jenkins]
+
+- name: Plugins are installed
+  shell: "curl -X POST \
+    -d '<jenkins><install plugin=\"{{ item }}@latest\" /></jenkins>' \
+    --header 'Content-Type: text/xml' \
+    http://{{ host_ip }}:8080/pluginManager/installNecessaryPlugins"
+  args:
+    creates: /data/jenkins/plugins/{{ item }}
+  with_items: "{{  plugins }}"
+  register: plugins_result
+  tags: [jenkins]
+
+# Workaround to fix the bug in restarting containers from Ansible 2
+
+- name: Container is stopped
+  docker_container:   
+    privileged: yes
+    env:
+      JAVA_OPTS: "-Djenkins.install.runSetupWizard=false     -Duser.timezone=Asia/Taipei"
+#      JENKINS_OPTS: "--prefix=/jenkins"
+    name: jenkins
+    image: "jenkins:{{ jenkins_version }}"
+    ports: 
+        - "8080:8080"
+        - "5000:5000"
+        - "50000:50000"
+    volumes:
+      - /data/jenkins:/var/jenkins_home
+      - /vagrant/.vagrant/machines:/machines
+    state: stopped
+  when: configs_result|changed or plugins_result|changed
+  tags: [jenkins]
+
+- name: Container is running
+  docker_container:   
+    privileged: yes
+    env:
+      JAVA_OPTS: "-Djenkins.install.runSetupWizard=false   -Duser.timezone=Asia/Taipei"
+#      JENKINS_OPTS: "--prefix=/jenkins" 
+    name: jenkins
+    image: "jenkins:{{ jenkins_version }}"
+    ports: 
+        - "8080:8080"
+        - "5000:5000"
+        - "50000:50000"
+    volumes:
+      - /data/jenkins:/var/jenkins_home
+      - /vagrant/.vagrant/machines:/machines
+  when: configs_result|changed or plugins_result|changed
+  tags: [jenkins]
+
+- pause: seconds=30
+  when: configs_result|changed or plugins_result|changed
+  tags: [jenkins]
+
+- name: Job directories are present
+  file:
+    path: "{{ home }}/jobs/{{ item.name }}"
+    state: directory
+    mode: 0777
+  with_items: "{{  jobs }}"
+  tags: [jenkins]
+
+- name: Jobs are present
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ home }}/jobs/{{ item.name }}/config.xml"
+    mode: 0777
+  with_items: "{{  jobs }}"
+  register: jobs_result
+  tags: [jenkins]
+
+- name: Jenkins is reloaded
+  uri:
+    url: http://{{ host_ip }}:8080/reload
+    method: POST
+    status_code: 200,302
+  when: jobs_result|changed
+  ignore_errors: yes
+  tags: [jenkins]
+
+- name: Scripts are present
+  copy:
+    src: scripts
+    dest: /data
+    mode: 0766
+  tags: [jenkins]

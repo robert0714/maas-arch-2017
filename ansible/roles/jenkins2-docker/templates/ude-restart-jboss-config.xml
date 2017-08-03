@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.10">
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>5</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers/>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.28">
+    <script>node(&apos;sit&apos;) {
+    stage(&apos;get Information&apos;){
+         echo  pwd()
+         sh &apos;whoami&apos;
+         sh &apos;systemctl status jboss_default&apos;
+         echo  pwd()
+    }
+   stage(&apos;restart Service&apos;){
+         
+         sh &apos;whoami&apos;
+         sh &apos;sudo systemctl restart jboss_default&apos;
+   }  
+}   </script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+</flow-definition>

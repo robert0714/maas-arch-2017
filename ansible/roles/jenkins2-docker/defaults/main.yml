@@ -1,0 +1,130 @@
+home: /data/jenkins
+main_job_src: service-workflow-config.xml
+service_redeploy_src: service-redeploy-config.xml
+
+configs: [
+  { src: "credentials.xml", dir: "/data/jenkins", file: "credentials.xml", mode: "0777" },
+  { src: "hudson.tasks.Maven.xml", dir: "/data/jenkins", file: "hudson.tasks.Maven.xml", mode: "0777" },
+  { src: "sit-config.xml", dir: "/data/jenkins/nodes/sit", file: "config.xml", mode: "0777" },
+  { src: "LogParserPublisher.xml", dir: "/data/jenkins", file: "hudson.plugins.logparser.LogParserPublisher.xml", mode: "0777" },
+  { src: "parsing_rules", dir: "/data/jenkins", file: "parsing_rules", mode: "0777" },
+  { src: "scriptApproval.xml", dir: "/data/jenkins", file: "scriptApproval.xml", mode: "0644" }
+]
+
+jobs: [
+  {
+    name: "go-demo-scale",
+    service_name: "go-demo",
+    src: "service-scale-df-config.xml",
+    scale: "+2",
+    time: "45 23 31 12 *"
+  }, {
+    name: "service-scale",
+    service_name: "my-service",
+    src: "service-scale-health-config.xml",
+    scale: "+1",
+  }, {
+    name: "go-demo-descale",
+    service_name: "go-demo",
+    src: "service-scale-df-config.xml",
+    scale: "-2",
+    time: "15 0 2 1 *"
+  }, {
+    name: "go-demo-1",
+    service_name: "go-demo",
+    src: "go-demo-1.xml"
+  }, {
+    name: "go-demo-2",
+    service_name: "go-demo",
+    src: "go-demo-2.xml"
+  }, {
+    name: "go-demo-3",
+    service_name: "go-demo",
+    src: "go-demo-3.xml"
+  }, {
+    name: "ude-tutorials",
+    service_name: "ude-tutorials",
+    src: "ude-tutorials02-config.xml"
+  }
+]
+
+jenkins_plugins: [ ]
+jenkins_admin_username: admin
+jenkins_admin_password: admin
+plugins:
+  - ace-editor
+  - active-directory
+  - async-http-client
+  - authentication-tokens
+  - branch-api
+  - build-pipeline-plugin
+  - cloudbees-folder
+  - conditional-buildstep
+  - copyartifact
+  - credentials-binding
+  - credentials
+  - dashboard-view
+  - deploy
+  - display-url-api
+  - docker-commons
+  - docker-workflow
+  - durable-task
+  - git-client
+  - git
+  - github-api
+  - github
+  - git-server
+  - global-build-stats
+  - handlebars
+  - icon-shim
+  - jackson2-api
+  - javadoc
+  - jobConfigHistory
+  - jquery-detached
+  - jquery
+  - junit
+  - log-parser
+  - mailer
+  - mapdb-api
+  - matrix-project
+  - maven-plugin
+  - metrics
+  - momentjs
+  - parameterized-trigger
+  - pipeline-build-step
+  - pipeline-graph-analysis
+  - pipeline-input-step
+  - pipeline-milestone-step
+  - pipeline-model-api
+  - pipeline-model-declarative-agent
+  - pipeline-model-definition
+  - pipeline-model-extensions
+  - pipeline-rest-api
+  - pipeline-stage-step
+  - pipeline-stage-tags-metadata
+  - pipeline-stage-view
+  - plain-credentials
+  - promoted-builds
+  - run-condition
+  - scm-api
+  - script-security
+  - sonar
+  - ssh-credentials
+  - ssh-slaves
+  - structs
+  - subversion
+  - support-core
+  - template-project
+  - token-macro
+  - wildfly-deployer
+  - workflow-aggregator
+  - workflow-api
+  - workflow-basic-steps
+  - workflow-cps-global-lib
+  - workflow-cps
+  - workflow-durable-task-step
+  - workflow-job
+  - workflow-multibranch
+  - workflow-scm-step
+  - workflow-step-api
+  - workflow-support

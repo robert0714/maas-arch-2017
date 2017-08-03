@@ -1,4 +1,4 @@
-- hosts: jenkins
+- hosts: ap-7
   #become: true
   #become_method: sudo
   #become_user: root

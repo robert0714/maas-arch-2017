@@ -9,4 +9,4 @@ docker_cfg_dest: /etc/default/docker
 centos_docker_cfg: centos-docker.cfg
 centos_docker_cfg_dest: /lib/systemd/system/docker.service
 registry_host_dir: /vagrant/registry
-
+jenkins_version: 2.72

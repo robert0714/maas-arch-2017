@@ -16,6 +16,7 @@ Vagrant.configure(2) do |config|
       # d.vm.network "private_network", ip: "192.168.77.10#{i+x}"    
       d.vm.provider "virtualbox" do |v|
         v.memory = 2048
+        v.cpus=2  
       end
       if (i == 1)
          d.vm.provision :shell, path: "scripts/bootstrap4CentOs_ansible.sh"

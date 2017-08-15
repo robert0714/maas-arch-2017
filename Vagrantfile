@@ -33,7 +33,12 @@ Vagrant.configure(2) do |config|
       end
       d.vm.hostname = "ap-#{i}"
       x = 2
-      d.vm.network "public_network", bridge: "eno4", ip: "192.168.57.10#{i+x}", auto_config: "false", netmask: "255.255.255.0" , gateway: "192.168.57.1"      
+      if (i < 8 )
+        ip="192.168.57.10#{i+x}"
+      else
+        ip=192.168.57.110
+      end
+      d.vm.network "public_network", bridge: "eno4", ip: "#{ip}", auto_config: "false", netmask: "255.255.255.0" , gateway: "192.168.57.1"      
       # d.vm.network "private_network", ip: "192.168.77.10#{i+x}"    
       d.vm.provider "virtualbox" do |v|
         v.memory = 2048

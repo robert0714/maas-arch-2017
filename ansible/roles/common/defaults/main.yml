@@ -18,7 +18,14 @@ hosts: [
   { host_ip: "192.168.57.106", host_name: "ap-4"},
   { host_ip: "192.168.57.107", host_name: "ap-5"},
   { host_ip: "192.168.57.108", host_name: "ap-6"},
-  { host_ip: "192.168.57.109", host_name: "ap-7"}
+  { host_ip: "192.168.57.109", host_name: "ap-7"},
+  { host_ip: "192.168.57.110", host_name: "ap-8"},
+  { host_ip: "192.168.57.111", host_name: "db-1"},
+  { host_ip: "192.168.57.112", host_name: "db-2"},
+  { host_ip: "192.168.57.113", host_name: "db-3"},
+  { host_ip: "192.168.57.114", host_name: "db-4"},
+  { host_ip: "192.168.57.115", host_name: "db-5"},
+  { host_ip: "192.168.57.116", host_name: "db-6"}
 ]
 
 obsolete_services:

@@ -8,7 +8,7 @@ Vagrant.configure(2) do |config|
   end  
   (1..2).each do |i|
     config.vm.define "nginx-#{i}" do |d|
-      d.vm.box = "bento/centos-7.3" 
+      d.vm.box = "bento/centos-7.4" 
       d.vm.hostname = "nginx-#{i}"
       x = 0
       d.vm.network "public_network", bridge: "eno4", ip: "192.168.57.10#{i+x}", auto_config: "false", netmask: "255.255.255.0" , gateway: "192.168.57.1"
@@ -48,7 +48,7 @@ Vagrant.configure(2) do |config|
   end
   (1..6).each do |i|
     config.vm.define "db-#{i}" do |d|
-      d.vm.box = "bento/centos-7.3" 
+      d.vm.box = "bento/centos-7.4" 
       d.vm.hostname = "db-#{i}"
       x = 0
       d.vm.network "public_network", bridge: "eno4", ip: "192.168.57.11#{i+x}", auto_config: "false", netmask: "255.255.255.0" , gateway: "192.168.57.1"      

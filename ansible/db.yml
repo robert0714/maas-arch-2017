@@ -1,0 +1,10 @@
+- hosts: db
+  #become: true
+  #become_method: sudo
+  #become_user: root
+  #strategy: free
+  serial: 1
+  roles:
+    - mysql
+    - mongodb
+

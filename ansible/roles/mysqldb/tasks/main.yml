@@ -1,0 +1,49 @@
+- name: Directories are created
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items: "{{ directories }}"
+  tags: [mysqldb]
+
+- name: Files are copied
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+  with_items: "{{ files }}"
+  tags: [mysqldb]
+
+- name: Copy .my.cnf file
+  template: 
+    src: temp_my.cnf.j2 
+    dest: /root/.my.cnf
+    owner: root 
+    group: root 
+    mode: 0644
+  tags: [mysql]
+
+- name: MySQL is running  
+  docker_container:
+#   restart_policy: always
+    privileged: yes
+    env:
+      MYSQL_ROOT_PASSWORD: qazwsx
+      MYSQL_DATABASE: ec
+      MYSQL_USER: ecuser
+      MYSQL_PASSWORD: qazwsx
+      EXTRA_OPTS: "--lower_case_table_names=1"
+    image: mysql/mysql-server:5.7.20-1.1.2
+    name: mysqldb
+    ports: 
+     - "49160:22"
+     - "49161:80"
+     - "3306:3306"    
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /data/mysql:/var/lib/mysql
+      - /vagrant/.vagrant/machines:/machines
+      - /etc/mysql/my55.cnf:/etc/my.cnf
+      # - /root/.my.cnf:/root/.my.cnf
+  when: not skip_ui is defined
+  tags: [mysqldb]
+ 

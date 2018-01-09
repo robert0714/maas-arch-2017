@@ -1,0 +1,12 @@
+VAGRANT_OSX_MODE: true
+CREATE_MYSQL_BASIC_USER_AND_DB: true
+
+directories:
+  - /etc/mysql
+
+files: [
+  { src: 'my55.cnf', dest: '/etc/mysql/my55.cnf', mode: '0644' }
+  
+]
+
+mysql_root_pass: qazwsx

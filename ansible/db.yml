@@ -6,7 +6,7 @@
   serial: 1
   roles:
     - common
-    - mysql
     - docker
+    - mysqldb
     - mongodb
 

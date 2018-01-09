@@ -1,2 +1,0 @@
----
-__host_ip: "{{ facter_ipaddress_eth1 }}"

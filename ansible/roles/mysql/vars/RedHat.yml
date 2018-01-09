@@ -1,3 +1,0 @@
----
-# __host_ip: "{{ ansible_eth0.ipv4.address }}"
-__host_ip: "{{ ansible_enp0s8.ipv4.address }}"

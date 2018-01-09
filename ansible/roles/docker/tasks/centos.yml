@@ -10,28 +10,49 @@
   with_items: "{{ centos_files }}"
   tags: [docker]
 
-   
-- name: add repository
-  yum_repository:
-    name: dockerrepo
-    description: Docker Repository
-    baseurl: https://yum.dockerproject.org/repo/main/centos/7/
-    gpgkey: https://yum.dockerproject.org/gpg
-    enabled: 1
-    gpgcheck: 1
-  ignore_errors: yes
-  tags: [docker]
+- name: Install Docker required packages
+  yum: name={{ item }} state=present
+  with_items:
+    - yum-utils
+    - device-mapper-persistent-data
+    - lvm2
+  tags: [docker]  
 
-- name: CentOS package is installed
+- name: add docker ce repo
+  shell: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  args:
+    creates: /etc/yum.repos.d/docker-ce.repo
+  register: docker_yum_repo
+  tags: [docker]  
+  
+- name: make yum cache fast
+  shell: yum makecache fast
+  when: docker_yum_repo.changed
+  tags: [docker] 
+
+- name: get docker stable version number
+  shell: yum list docker-ce.x86_64  --showduplicates | sort -r |grep  docker-ce-stable  |awk '{print $2}' | awk 'BEGIN{getline;print}'
+  register: docker_stable_version  
+  tags: [docker] 
+
+- name: CentOS docker package is installed
   yum:
-    name: docker-engine
+    name: "docker-ce-{{ docker_stable_version.stdout }}"
     state: present
+  notify: restart docker
   tags: [docker]
 
 - name: python-pip is present
   yum:
     name: python-pip
     state: present
+  tags: [docker]
+
+- name:  update pip
+  become: true
+  pip:  
+    name: pip
+    state: latest 
   tags: [docker]
 
 - name: docker-py is present
@@ -50,13 +71,20 @@
 
 - name: Centos Daemon is reloaded
   command: systemctl daemon-reload
-  when: copy_result|changed and is_systemd is defined
+  when: is_systemd is defined
   tags: [docker]
 
 - name: vagrant user is added to the docker group
   user:
-    name: vagrant
+    name: "{{ item }}"
     group: docker
+  with_items: 
+    - iisi.dev94
+    - iisi.dev95
+    - iisi.dev04
+    - iisi.dev05
+    - iisi.dev06
+    - iisi.dev07
   register: user_result
   tags: [docker]
 
@@ -79,9 +107,4 @@
   when: not skip_ui is defined
   ignore_errors: yes
   tags: [docker]
-
-- name: CentOS service is running
-  service:
-    name: docker
-    state: running
-  tags: [docker]
+ 

@@ -1,0 +1,252 @@
+- name: Add Mysql repository
+  yum: name=http://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
+  when: usePercona == 0
+  tags: [mysql]
+
+- name: Add Percona Server Mysql repository
+  yum: name=http://www.percona.com/downloads/percona-release/redhat/0.1-4/percona-release-0.1-4.noarch.rpm
+  when: usePercona == 1 
+  tags: [mysql]
+
+- name: Install Mysql common RPM dependencies
+  become: true
+  yum: name={{ item }} state=present
+  with_items:
+    - net-tools
+    - vim
+    - telnet
+    - lsof
+    - python-pip
+    - python-virtualenv
+    - gcc
+    # - sshpass 
+  tags: [mysql]
+
+- name: Install Mysql RPM dependencies
+  become: true
+  yum: name={{ item }} state=present
+  with_items: 
+    - mysql-community-common
+    - mysql-community-libs
+    - mysql-community-client
+    - mysql-community-server 
+    - mysql-community-devel 
+  when: usePercona == 0 
+  tags: [mysql]
+
+- name: Install Percona Mysql RPM dependencies
+  become: true
+  yum: name={{ item }} state=present
+  with_items:
+    - Percona-Server-server-57
+    - Percona-Server-client-57
+    - Percona-Server-shared-57
+    - Percona-Server-devel-57 
+  when: usePercona == 1   
+  tags: [mysql]
+
+- name:  pip  install pip
+  become: true
+  pip:  
+    name: pip
+    state: latest
+  ignore_errors: yes
+  tags: [mysql]
+
+- name:  pip  install MySQL-python
+  become: true
+  pip:
+    name:  MySQL-python
+  ignore_errors: yes
+  tags: [mysql]
+
+- name: mysql service is started 
+  service:
+    name: mysqld
+    state: started
+  tags: [mysql]
+ 
+
+- name: Get percona server password
+  shell: cat /var/log/mysqld.log | grep "temporary password" | awk '{print $11}'
+  register: mysql_temp_pass
+  tags: [mysql]
+
+
+- name: Copy .my.cnf file
+  template: 
+    src: temp_my.cnf.j2 
+    dest: /root/.my.cnf
+    owner: root 
+    group: root 
+    mode: 0644
+  tags: [mysql]
+
+- name: whoami 
+  become: false
+  shell: whoami
+  register: linux_user
+  tags: [mysql]
+
+- name: id -g -n
+  become: false
+  shell: id -g -n
+  register: linux_group
+  tags: [mysql]
+
+# https://www.rennetti.com/howto/139/mysql-5-7-on-ansible  
+- name: Set new password from temporary password
+  shell: 'mysql -e "SET PASSWORD = PASSWORD(''{{ mysql_root_pass }}'');" --connect-expired-password -uroot -p"{{ mysql_temp_pass.stdout }}"'
+  ignore_errors: True
+  tags: [mysql]
+
+- name: "MySQL: template: .my.cnf file to /home/{{ linux_user.stdout }}"
+  become: false
+  template:
+    src: temp_my.cnf.j2
+    dest: "~/.my.cnf"
+    owner: "{{ linux_user.stdout }}"
+    group: "{{ linux_group.stdout }}"
+    mode: 0600
+  tags: [mysql]
+
+
+- name: Set root password
+  become: false
+  mysql_user: 
+      name: root
+      password: "{{ mysql_root_pass }}"
+      priv: '*.*:ALL,GRANT'      
+      state: present
+      host: "{{ item }}"
+      sql_log_bin: no
+  with_items:
+     - "{{ ansible_hostname }}"
+     - 127.0.0.1
+     - ::1
+     - localhost
+     - '%'
+  tags: [mysql]
+
+- name: register hostname
+  shell: hostname
+  register: hostname
+  tags: [mysql]  
+  
+  
+- name: Configure my.cnf file 
+  template: 
+    src: my.cnf.00.j2 
+    dest: /etc/my.cnf
+    owner: root 
+    group: root 
+    mode: 0644 
+  tags: [mysql]
+  
+- name: hostname.stdout.find('mysql-01') 
+  debug:
+    msg: "  {{ hostname.stdout.find('mysql-01')  }} " 
+  tags: [mysql]  
+  
+- name: hostname.stdout.find('mysql-03') 
+  debug:
+    msg: "  {{ hostname.stdout.find('mysql-03')  }} "   
+  tags: [mysql]
+  
+  
+
+- name:  Create replication user
+  mysql_user: 
+     name: "{{ mysql_rep_user }}"
+     password: "{{ mysql_rep_pass }}"
+     priv: "{{ mysql_rep_priv }}"
+     host: '%'
+     state: present
+  when: master is defined
+  tags: [mysql]
+
+
+- name: replication group - Flush
+  shell: mysql --defaults-file=/root/.my.cnf -e "FLUSH PRIVILEGES";  mysql --defaults-file=/root/.my.cnf -e "FLUSH TABLES WITH READ LOCK";
+  when: master is defined
+  tags: [mysql]
+
+- name: Replication-group -  performance_schema.replication_group_members status ?
+  shell: mysql -uroot   -Bse "SELECT * FROM performance_schema.replication_group_members\G;" | grep MEMBER_STATE | awk '{print $2}'
+  register: rg_status
+  tags: [mysql]
+
+- name: Replication-group -  PLUGIN group_replication exist ?
+  shell: mysql -uroot   -Bse "SHOW PLUGINS;" | grep group_replication | awk '{print $2}'
+  register: plugin_status
+  tags: [mysql]
+
+- name: display rg_status[1]
+  debug:
+    msg: "  {{ rg_status }} "  
+  tags: [mysql]
+
+- name: display rg_status[2]
+  debug:
+    msg: "  {{ rg_status.stdout.find('ONLINE') }} "  
+  tags: [mysql]
+
+
+- name: mysql service is restarted in order to install group_replication plugin
+  service:
+    name: mysqld
+    state: restarted
+  when:   rg_status.stdout.find('ONLINE')  == -1
+  tags: [mysql]
+  
+- name: Replication-group - INSTALL PLUGIN group_replication
+  shell: mysql -uroot   -Bse "INSTALL PLUGIN group_replication SONAME \"group_replication.so\" ;"
+  when : plugin_status.stdout.find('ACTIVE')  == -1  
+  tags: [mysql]
+
+
+- name: Replication-group - Configure the recovery credentials
+  shell: mysql -uroot  -Bse  "CHANGE MASTER TO MASTER_USER=\"{{ mysql_rep_user }}\", MASTER_PASSWORD=\"{{ mysql_rep_pass }}\"  FOR CHANNEL \"group_replication_recovery\";"
+  tags: [mysql]
+
+- name: display host_var
+  debug:
+    msg: "  {{ hostvars[groups['mysql'][0]]['repl_local_address'] }}   "  
+  tags: [mysql]
+
+
+- name: Replication-group -  Master start in  group_replication  
+  shell: mysql -uroot   -Bse "SET GLOBAL group_replication_bootstrap_group=ON; START GROUP_REPLICATION; SET GLOBAL group_replication_bootstrap_group=OFF; " 
+  register: master_node_
+  when: " master is   defined    and   rg_status.stdout.find('ONLINE')  == -1 "
+  tags: [mysql]
+
+
+
+- name: Replication-group -  Slave start in  group_replication  
+  shell: mysql -uroot   -Bse "RESET MASTER; START GROUP_REPLICATION;  " 
+  register: master_node_
+  when: "  master is not  defined and   rg_status.stdout.find('ONLINE')  == -1    "
+  tags: [mysql]
+
+
+
+ 
+- name:  To provide read/write access to the cluster for ProxySQL, add this user on one of the Percona XtraDB Cluster nodes
+  become: false
+  mysql_user: 
+      name: "{{ proxysql_user }}"
+      password: "{{ proxysql_user_passwd }}"
+      priv: '*.*:ALL,GRANT' 
+      host: "{{ item }}"
+      state: present 
+  with_items:
+     - "{{ ansible_hostname }}"
+     - 127.0.0.1
+     - ::1
+     - localhost
+     - '%'
+  ignore_errors: yes
+  tags: [mysql]
+ 
+

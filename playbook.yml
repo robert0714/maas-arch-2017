@@ -1,0 +1,11 @@
+- hosts: all
+  #become: true
+  #become_method: sudo
+  #become_user: root
+  #strategy: free
+  serial: 1
+  roles:
+    - common
+    - docker
+    - docker-compose
+    - oracle-java-develop

@@ -1,7 +1,9 @@
-  docker_extra: ""
+docker_extra: ""
 
-  centos_files: [
-     { src: "docker.centos.repo", dest: "/etc/yum.repos.d/docker.repo" },
-#     { src: "docker.centos.service", dest: "/lib/systemd/system/docker.service" },
-     { src: "daemon.json", dest: "/etc/docker/daemon.json" },
+centos_files: [
+     # { src: "docker.centos.repo", dest: "/etc/yum.repos.d/docker.repo" },
+     { src: "daemon.json", dest: "/etc/docker/daemon.json" }
   ]
+  
+centos_docker_cfg: centos-docker.service
+centos_docker_cfg_dest: /lib/systemd/system/docker.service

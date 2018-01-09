@@ -5,6 +5,8 @@
   #strategy: free
   serial: 1
   roles:
+    - common
     - mysql
+    - docker
     - mongodb
 

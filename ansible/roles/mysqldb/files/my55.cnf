@@ -32,3 +32,13 @@ pid-file=/var/run/mysqld/mysqld.pid
 lower_case_table_names=1
 character-set-server=utf8
 collation-server=utf8_general_ci
+
+
+#關閉加密允許DB監聽軟體可以讀入
+skip_ssl=YES
+
+validate_password_policy=LOW;
+validate_password_special_char_count=0;
+validate_password_number_count =0;
+validate_password_mixed_case_count =0;
+validate_password_length =6;

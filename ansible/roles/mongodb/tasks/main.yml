@@ -7,7 +7,7 @@
   docker_container:
 #   restart_policy: always
     name: mongodb
-    image: bitnami/mongodb:latest 
+    image: mongo:latest
     ports: 
     - "27017:27017"
     privileged: yes
@@ -16,6 +16,6 @@
 #      MONGODB_PASSWORD: ude
 #      MONGODB_DATABASE: ude
     volumes:
-      - /data/mongodb:/bitnami/mongodb
+      - /data/mongodb:/data/db
   when: not skip_ui is defined
   tags: [mongodb]

@@ -58,6 +58,16 @@ Vagrant.configure(2) do |config|
       end
       d.vm.provision :shell, inline: " sudo route delete default; sudo route add default gw 192.168.57.1 dev enp0s8 " 
     end
+  end
+  config.vm.define "nginx-3" do |d|
+      d.vm.box = "bento/centos-7.4"
+      d.vm.hostname = "nginx-3"      
+      d.vm.network "public_network", bridge: "eno4", ip: "192.168.57.117", auto_config: "false", netmask: "255.255.255.0" , gateway: "192.168.57.1"
+      # d.vm.network "private_network", ip: "192.168.77.10#{i+x}"    
+      d.vm.provider "virtualbox" do |v|
+        v.memory = 2048
+      end
+      d.vm.provision :shell, inline: " sudo route delete default; sudo route add default gw 192.168.57.1 dev enp0s8 "
   end 
   if Vagrant.has_plugin?("vagrant-cachier")
     config.cache.scope = :box
